@@ -39,12 +39,14 @@ def login():
         'show_dialog': True
     }
     auth_url = f"{AUTH_URL}?{'&'.join([f'{key}={value}' for key, value in params.items()])}"
+    print(f"Authorization URL: {auth_url}")  # Debug statement
     return jsonify({'auth_url': auth_url})
 
 @app.route('/callback')
 def callback():
     global access_token
     # Handle the callback from Spotify
+    print(f"Request args: {request.args}")  # Debug statement
     if 'error' in request.args:
         return jsonify({'error': request.args['error']}), 400
 
@@ -58,15 +60,20 @@ def callback():
             'client_id': CLIENT_ID,
             'client_secret': CLIENT_SECRET
         }
-        response = requests.post(TOKEN_URL, data=payload)
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+        response = requests.post(TOKEN_URL, data=payload, headers=headers)
         if response.status_code == 200:
             token_data = response.json()
             access_token = token_data['access_token']
             return jsonify({'message': 'Login successful', 'access_token': access_token})
         else:
-            return jsonify({'error': 'Failed to retrieve access token'}), 400
-    else
-      return jsonify({"message": "error xD"})
+            error_message = response.json().get('error', 'Failed to retrieve access token')
+            return jsonify({'error': error_message}), 400
+    else:
+        return jsonify({"error": "Authorization code not found"}), 400
+
 @app.route('/search')
 def search():
     global access_token
@@ -83,4 +90,4 @@ def search():
     return jsonify({'error': 'Missing query or access token'}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000)
