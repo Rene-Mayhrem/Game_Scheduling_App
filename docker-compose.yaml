@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./src  
+    ports:
+      - "5000:5000"
+    environment: 
+      - FLASK_ENV=development
+    volumes:
+      - ./flask-backend:/app
+    networks:
+      - spotify-network
+  frontend:
+    build: ./spotify-frontend
+    ports:
+      - "3000:80"
+    depends_on: 
+      - backend
+    networks:
+      - spotify-network
+
+networks:
+  spotify-network:
+    driver: bridge
