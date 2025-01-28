@@ -8,7 +8,7 @@ services:
     environment: 
       - FLASK_ENV=development
     volumes:
-      - ./flask-backend:/app
+      - ./src:/app
     networks:
       - spotify-network
   frontend:
